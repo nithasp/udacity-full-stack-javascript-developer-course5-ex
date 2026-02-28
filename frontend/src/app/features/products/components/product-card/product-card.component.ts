@@ -1,9 +1,9 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Product, ProductType } from '../../../features/products/models/product';
-import { CartService } from '../../../core/services/cart.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { Product, ProductType } from '../../models/product';
+import { CartService } from '../../../../core/services/cart.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-product-card',

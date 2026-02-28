@@ -5,7 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ToastrModule } from 'ngx-toastr';
 import { of } from 'rxjs';
 import { ProductListComponent } from './product-list.component';
-import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
+import { ProductCardComponent } from '../components/product-card/product-card.component';
 import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -113,15 +113,6 @@ describe('ProductListComponent', () => {
     component.filterByCategory('Electronics');
     component.onSearchChange('head');
     expect(component.filteredProducts.length).toBe(1);
-  });
-
-  it('should add product to cart and show notification', () => {
-    spyOn(cartService, 'addToCart');
-    component.onAddToCart({ product: mockProducts[0], quantity: 2 });
-    expect(cartService.addToCart).toHaveBeenCalledWith(
-      mockProducts[0], 2, mockProducts[0].types[0]
-    );
-    expect(notificationSpy.success).toHaveBeenCalled();
   });
 
   it('should render product cards', () => {

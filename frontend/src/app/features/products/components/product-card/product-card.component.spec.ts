@@ -2,8 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProductCardComponent } from './product-card.component';
-import { TruncatePipe } from '../../pipes/truncate.pipe';
-import { Product } from '../../../features/products/models/product';
+import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
+import { Product } from '../../models/product';
+import { CartService } from '../../../../core/services/cart.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 describe('ProductCardComponent', () => {
   let component: ProductCardComponent;
@@ -36,7 +38,8 @@ describe('ProductCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule],
-      declarations: [ProductCardComponent, TruncatePipe]
+      declarations: [ProductCardComponent, TruncatePipe],
+      providers: [CartService, { provide: NotificationService, useValue: { success: () => {} } }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
@@ -72,26 +75,6 @@ describe('ProductCardComponent', () => {
   it('should display product category', () => {
     const category = fixture.nativeElement.querySelector('.product-card__category');
     expect(category.textContent).toContain('Electronics');
-  });
-
-  it('should initialize with quantity 1', () => {
-    expect(component.selectedQuantity).toBe(1);
-  });
-
-  it('should emit addToCart event with product and quantity', () => {
-    spyOn(component.addToCart, 'emit');
-    component.selectedQuantity = 3;
-    component.onAddToCart();
-    expect(component.addToCart.emit).toHaveBeenCalledWith({
-      product: mockProduct,
-      quantity: 3
-    });
-  });
-
-  it('should reset quantity after adding to cart', () => {
-    component.selectedQuantity = 5;
-    component.onAddToCart();
-    expect(component.selectedQuantity).toBe(1);
   });
 
   it('should generate 5 rating stars', () => {

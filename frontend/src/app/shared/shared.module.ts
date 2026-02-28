@@ -6,7 +6,6 @@ import { HighlightDirective } from './directives/highlight.directive';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { InputFieldComponent } from './components/form/input-field/input-field.component';
 import { QuantityInputComponent } from './components/form/quantity-input/quantity-input.component';
-import { ProductCardComponent } from './components/product-card/product-card.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { DialogConfirmComponent } from './components/dialogs/dialog-confirm/dialog-confirm.component';
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
@@ -17,7 +16,6 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     TruncatePipe,
     InputFieldComponent,
     QuantityInputComponent,
-    ProductCardComponent,
     NavbarComponent,
     DialogConfirmComponent,
     LoadingSpinnerComponent
@@ -35,7 +33,6 @@ import { LoadingSpinnerComponent } from './components/loading-spinner/loading-sp
     TruncatePipe,
     InputFieldComponent,
     QuantityInputComponent,
-    ProductCardComponent,
     NavbarComponent,
     DialogConfirmComponent,
     LoadingSpinnerComponent
