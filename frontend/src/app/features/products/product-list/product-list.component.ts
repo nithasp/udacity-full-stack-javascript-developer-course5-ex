@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { map } from 'rxjs';
 import { Product } from '../models/product';
 import { ProductService } from '../services/product.service';
+import { mapBackendProduct } from '../utils/product-mappers';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
@@ -26,7 +28,9 @@ export class ProductListComponent implements OnInit {
   }
 
   getProducts(): void {
-    this.productService.getProducts().subscribe({
+    this.productService.getProducts().pipe(
+      map(products => products.map(mapBackendProduct))
+    ).subscribe({
       next: (products) => {
         this.products = products;
         this.filteredProducts = products;

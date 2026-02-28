@@ -10,6 +10,7 @@ import { ProductService } from '../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Product } from '../models/product';
+import { BackendProduct, mapBackendProduct } from '../utils/product-mappers';
 
 describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
@@ -18,8 +19,8 @@ describe('ProductDetailComponent', () => {
   let cartService: CartService;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
 
-  const mockProduct: Product = {
-    _id: 'prod1',
+  const mockBackendProduct: BackendProduct = {
+    id: 1,
     name: 'Test Headphones',
     category: 'Electronics',
     price: 79.99,
@@ -38,9 +39,11 @@ describe('ProductDetailComponent', () => {
     stock: 85
   };
 
+  const mockProduct: Product = mapBackendProduct(mockBackendProduct);
+
   beforeEach(async () => {
     productServiceSpy = jasmine.createSpyObj('ProductService', ['getProductById']);
-    productServiceSpy.getProductById.and.returnValue(of(mockProduct));
+    productServiceSpy.getProductById.and.returnValue(of(mockBackendProduct));
     notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error', 'info', 'warning']);
 
     await TestBed.configureTestingModule({
@@ -107,11 +110,11 @@ describe('ProductDetailComponent', () => {
   });
 
   it('should add product to cart', () => {
-    spyOn(cartService, 'addToCart');
+    spyOn(cartService, 'addToCartLocal');
     component.selectedQuantity = 2;
     component.addToCart();
-    expect(cartService.addToCart).toHaveBeenCalledWith(
-      mockProduct, 2, component.selectedType
+    expect(cartService.addToCartLocal).toHaveBeenCalledWith(
+      component.product!, 2, component.selectedType
     );
     expect(notificationSpy.success).toHaveBeenCalled();
   });

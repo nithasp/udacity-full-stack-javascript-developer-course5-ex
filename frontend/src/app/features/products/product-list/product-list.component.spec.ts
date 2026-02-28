@@ -10,7 +10,7 @@ import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Product } from '../models/product';
+import { BackendProduct } from '../utils/product-mappers';
 
 describe('ProductListComponent', () => {
   let component: ProductListComponent;
@@ -19,9 +19,9 @@ describe('ProductListComponent', () => {
   let cartService: CartService;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
 
-  const mockProducts: Product[] = [
+  const mockBackendProducts: BackendProduct[] = [
     {
-      _id: 'p1',
+      id: 1,
       name: 'Headphones',
       category: 'Electronics',
       price: 79.99,
@@ -34,7 +34,7 @@ describe('ProductListComponent', () => {
       stock: 10
     },
     {
-      _id: 'p2',
+      id: 2,
       name: 'Office Chair',
       category: 'Furniture',
       price: 249.99,
@@ -50,7 +50,7 @@ describe('ProductListComponent', () => {
 
   beforeEach(async () => {
     productServiceSpy = jasmine.createSpyObj('ProductService', ['getProducts']);
-    productServiceSpy.getProducts.and.returnValue(of(mockProducts));
+    productServiceSpy.getProducts.and.returnValue(of(mockBackendProducts));
 
     notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error', 'info', 'warning']);
 

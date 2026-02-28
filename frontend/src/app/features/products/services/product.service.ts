@@ -1,24 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { Product } from '../models/product';
-
-interface BackendProduct {
-  id: number;
-  name: string;
-  category?: string;
-  price: number;
-  image?: string;
-  description?: string;
-  previewImg?: string[];
-  types?: Product['types'];
-  reviews?: Product['reviews'];
-  overallRating?: number;
-  stock?: number;
-  isActive?: boolean;
-  shopId?: string;
-  shopName?: string;
-}
+import { Observable } from 'rxjs';
+import { BackendProduct } from '../utils/product-mappers';
 
 @Injectable({
   providedIn: 'root'
@@ -29,34 +12,11 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getProducts(): Observable<Product[]> {
-    return this.http.get<BackendProduct[]>(this.apiUrl).pipe(
-      map(products => products.map(p => this.mapBackendProduct(p)))
-    );
+  getProducts(): Observable<BackendProduct[]> {
+    return this.http.get<BackendProduct[]>(this.apiUrl);
   }
 
-  getProductById(id: string): Observable<Product | undefined> {
-    return this.http.get<BackendProduct>(`${this.apiUrl}/${id}`).pipe(
-      map(p => this.mapBackendProduct(p))
-    );
-  }
-
-  private mapBackendProduct(p: BackendProduct): Product {
-    return {
-      _id: String(p.id),
-      name: p.name,
-      category: p.category ?? '',
-      price: p.price,
-      image: p.image ?? '',
-      description: p.description ?? '',
-      previewImg: p.previewImg ?? [],
-      types: p.types ?? [],
-      reviews: p.reviews ?? [],
-      overallRating: p.overallRating ?? 0,
-      stock: p.stock,
-      isActive: p.isActive,
-      shopId: p.shopId,
-      shopName: p.shopName,
-    };
+  getProductById(id: string): Observable<BackendProduct> {
+    return this.http.get<BackendProduct>(`${this.apiUrl}/${id}`);
   }
 }

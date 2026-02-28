@@ -55,8 +55,8 @@ describe('ProductService', () => {
       expect(products.length).toBe(2);
       expect(products[0].name).toBe('Product 1');
       expect(products[1].name).toBe('Product 2');
-      expect(products[0]._id).toBe('1');
-      expect(products[1]._id).toBe('2');
+      expect(products[0].id).toBe(1);
+      expect(products[1].id).toBe(2);
     });
 
     const req = httpMock.expectOne('http://localhost:3000/products');
@@ -67,28 +67,13 @@ describe('ProductService', () => {
   it('should find a product by ID', () => {
     service.getProductById('2').subscribe(product => {
       expect(product).toBeTruthy();
-      expect(product?.name).toBe('Product 2');
-      expect(product?.price).toBe(199.99);
-      expect(product?._id).toBe('2');
+      expect(product.name).toBe('Product 2');
+      expect(product.price).toBe(199.99);
+      expect(product.id).toBe(2);
     });
 
     const req = httpMock.expectOne('http://localhost:3000/products/2');
     expect(req.request.method).toBe('GET');
     req.flush(mockBackendProducts[1]);
-  });
-
-  it('should map backend product fields correctly', () => {
-    service.getProducts().subscribe(products => {
-      const product = products[0];
-      expect(product._id).toBe('1');
-      expect(product.category).toBe('Electronics');
-      expect(product.price).toBe(99.99);
-      expect(product.image).toBe('https://example.com/img1.jpg');
-      expect(product.description).toBe('First product');
-      expect(product.overallRating).toBe(4.5);
-    });
-
-    const req = httpMock.expectOne('http://localhost:3000/products');
-    req.flush(mockBackendProducts);
   });
 });

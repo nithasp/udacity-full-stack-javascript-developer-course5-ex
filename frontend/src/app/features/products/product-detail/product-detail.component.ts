@@ -1,9 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
+import { map } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Product, ProductType } from '../models/product';
 import { ProductService } from '../services/product.service';
+import { mapBackendProduct } from '../utils/product-mappers';
 import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -37,7 +39,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.productService.getProductById(id).subscribe({
+      this.productService.getProductById(id).pipe(
+        map(mapBackendProduct)
+      ).subscribe({
         next: (product) => {
           this.product = product;
           if (product) {
