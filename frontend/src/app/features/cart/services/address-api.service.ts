@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AddressEntry, AddressForm } from '../../features/cart/models/address.model';
+import { AddressEntry, AddressForm } from '../models/address.model';
 
 const API_URL = 'http://localhost:3000/addresses';
 

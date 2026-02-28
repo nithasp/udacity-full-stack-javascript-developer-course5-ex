@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { AddressDialogMode, AddressEntry, AddressForm } from '../../../models/address.model';
 import { NotificationService } from '../../../../../core/services/notification.service';
-import { AddressApiService } from '../../../../../core/services/address-api.service';
+import { AddressApiService } from '../../../services/address-api.service';
 import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 
 @Component({
