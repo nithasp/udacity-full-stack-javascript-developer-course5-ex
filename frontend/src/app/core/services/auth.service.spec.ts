@@ -5,7 +5,8 @@ import {
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 
-import { AuthService, AuthResponse, RefreshResponse } from './auth.service';
+import { AuthService } from './auth.service';
+import { AuthApiService, AuthResponse, RefreshResponse } from './auth-api.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -31,6 +32,7 @@ describe('AuthService', () => {
     TestBed.configureTestingModule({
       providers: [
         AuthService,
+        AuthApiService,
         provideHttpClient(),
         provideHttpClientTesting(),
       ],

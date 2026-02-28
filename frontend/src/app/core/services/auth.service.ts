@@ -1,38 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { AuthApiService, AuthUser, AuthResponse, RefreshResponse } from './auth-api.service';
 
-// ── Interfaces ──────────────────────────────────────────────────────────────
-
-export interface AuthUser {
-  id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface AuthResponse {
-  user: AuthUser;
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface RefreshResponse {
-  accessToken: string;
-  refreshToken: string;
-}
+// Re-export so all existing consumers keep their imports unchanged
+export type { AuthUser, AuthResponse, RefreshResponse };
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const API_URL = 'http://localhost:3000/auth';
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 const USER_KEY = 'currentUser';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasValidToken());
   isLoggedIn$ = this.loggedInSubject.asObservable();
@@ -48,7 +28,7 @@ export class AuthService {
   );
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private authApi: AuthApiService) {}
 
   // ── Token helpers ──────────────────────────────────────────────────────────
 
@@ -99,21 +79,22 @@ export class AuthService {
    * displayed username always reflects the real database value.
    */
   fetchCurrentUser(): Observable<AuthUser> {
-    return this.http.get<AuthUser>(`${API_URL}/me`).pipe(
-      tap(user => {
+    return this.authApi.fetchMe().pipe(
+      tap((user) => {
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         this.currentUserSubject.next(user);
       }),
-      catchError(err => throwError(() => err))
+      catchError((err) => throwError(() => err))
     );
   }
+
+  // ── Session helpers ────────────────────────────────────────────────────────
 
   private storeSession(response: AuthResponse): void {
     localStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));
     this.loggedInSubject.next(true);
-    // Use the user object directly from the server response — ground truth
     this.currentUserSubject.next(response.user);
   }
 
@@ -126,29 +107,15 @@ export class AuthService {
   // ── Auth operations ────────────────────────────────────────────────────────
 
   register(username: string, password: string): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_URL}/register`, { username, password })
-      .pipe(
-        tap((res) => this.storeSession(res)),
-        catchError((err) => {
-          const message =
-            err.error?.error || 'Registration failed. Please try again.';
-          return throwError(() => new Error(message));
-        })
-      );
+    return this.authApi
+      .register(username, password)
+      .pipe(tap((res) => this.storeSession(res)));
   }
 
   login(username: string, password: string): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_URL}/login`, { username, password })
-      .pipe(
-        tap((res) => this.storeSession(res)),
-        catchError((err) => {
-          const message =
-            err.error?.error || 'Login failed. Please try again.';
-          return throwError(() => new Error(message));
-        })
-      );
+    return this.authApi
+      .login(username, password)
+      .pipe(tap((res) => this.storeSession(res)));
   }
 
   /**
@@ -163,16 +130,9 @@ export class AuthService {
       return throwError(() => new Error('No refresh token available'));
     }
 
-    return this.http
-      .post<RefreshResponse>(`${API_URL}/refresh`, { refreshToken })
-      .pipe(
-        tap((res) => this.storeRefreshedTokens(res)),
-        catchError((err) => {
-          const message =
-            err.error?.error || 'Session expired. Please log in again.';
-          return throwError(() => new Error(message));
-        })
-      );
+    return this.authApi
+      .refresh(refreshToken)
+      .pipe(tap((res) => this.storeRefreshedTokens(res)));
   }
 
   /**
@@ -184,9 +144,7 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
-      this.http
-        .post(`${API_URL}/logout`, { refreshToken })
-        .subscribe({ error: () => {} });
+      this.authApi.logout(refreshToken).subscribe({ error: () => {} });
     }
     this.clearSession();
   }
