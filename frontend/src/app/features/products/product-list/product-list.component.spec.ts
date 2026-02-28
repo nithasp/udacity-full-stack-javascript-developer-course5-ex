@@ -8,8 +8,8 @@ import { ProductListComponent } from './product-list.component';
 import { ProductCardComponent } from '../components/product-card/product-card.component';
 import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
 import { ProductService } from '../services/product.service';
-import { CartService } from '../../../core/services/cart.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { CartService } from '../../../core/services/cart/cart.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 import { BackendProduct } from '../utils/product-mappers';
 
 describe('ProductListComponent', () => {

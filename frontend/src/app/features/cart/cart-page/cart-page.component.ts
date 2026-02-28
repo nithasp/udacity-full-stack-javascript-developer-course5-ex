@@ -2,9 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { CartItem } from '../../products/models/product';
-import { CartService } from '../../../core/services/cart.service';
-import { CartApiService } from '../../../core/services/cart-api.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { CartService } from '../../../core/services/cart/cart.service';
+import { CartApiService } from '../../../core/services/cart/cart-api.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 import { AddressApiService } from '../services/address-api.service';
 import { AddressEntry } from '../models/address.model';
 

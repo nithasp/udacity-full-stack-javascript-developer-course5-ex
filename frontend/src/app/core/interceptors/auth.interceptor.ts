@@ -15,8 +15,8 @@ import {
   throwError,
 } from 'rxjs';
 
-import { AuthService } from '../services/auth.service';
-import { NotificationService } from '../services/notification.service';
+import { AuthService } from '../services/auth/auth.service';
+import { NotificationService } from '../services/ui/notification.service';
 
 // ── Module-level state shared across all interceptor invocations ─────────────
 

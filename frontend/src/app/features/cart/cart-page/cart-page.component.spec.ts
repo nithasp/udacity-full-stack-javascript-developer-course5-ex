@@ -3,8 +3,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { ToastrModule } from 'ngx-toastr';
 import { CartPageComponent } from './cart-page.component';
-import { CartService } from '../../../core/services/cart.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { CartService } from '../../../core/services/cart/cart.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 import { InputFieldComponent } from '../../../shared/components/form/input-field/input-field.component';
 import { Product, CartItem } from '../../products/models/product';
 

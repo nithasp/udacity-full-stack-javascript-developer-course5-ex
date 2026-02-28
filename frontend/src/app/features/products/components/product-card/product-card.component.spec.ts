@@ -4,8 +4,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ProductCardComponent } from './product-card.component';
 import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
 import { Product } from '../../models/product';
-import { CartService } from '../../../../core/services/cart.service';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { CartService } from '../../../../core/services/cart/cart.service';
+import { NotificationService } from '../../../../core/services/ui/notification.service';
 
 describe('ProductCardComponent', () => {
   let component: ProductCardComponent;

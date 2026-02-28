@@ -7,8 +7,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { of } from 'rxjs';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductService } from '../services/product.service';
-import { CartService } from '../../../core/services/cart.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { CartService } from '../../../core/services/cart/cart.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 import { Product } from '../models/product';
 import { BackendProduct, mapBackendProduct } from '../utils/product-mappers';
 

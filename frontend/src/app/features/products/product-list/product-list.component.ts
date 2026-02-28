@@ -3,7 +3,7 @@ import { map } from 'rxjs';
 import { Product } from '../models/product';
 import { ProductService } from '../services/product.service';
 import { mapBackendProduct } from '../utils/product-mappers';
-import { NotificationService } from '../../../core/services/notification.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 
 @Component({
   selector: 'app-product-list',

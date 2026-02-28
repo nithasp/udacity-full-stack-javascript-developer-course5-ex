@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProductType } from '../../features/products/models/product';
+import { ProductType } from '../../../features/products/models/product';
 
 const API_URL = 'http://localhost:3000/cart';
 

@@ -10,9 +10,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { AddressDialogMode, AddressEntry, AddressForm } from '../../../models/address.model';
-import { NotificationService } from '../../../../../core/services/notification.service';
+import { NotificationService } from '../../../../../core/services/ui/notification.service';
 import { AddressApiService } from '../../../services/address-api.service';
-import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
+import { ConfirmDialogService } from '../../../../../core/services/ui/confirm-dialog.service';
 
 @Component({
   selector: 'app-address-dialog',

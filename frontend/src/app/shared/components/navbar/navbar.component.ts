@@ -1,9 +1,9 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { CartService } from '../../../core/services/cart.service';
-import { AuthService, AuthUser } from '../../../core/services/auth.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { CartService } from '../../../core/services/cart/cart.service';
+import { AuthService, AuthUser } from '../../../core/services/auth/auth.service';
+import { NotificationService } from '../../../core/services/ui/notification.service';
 
 @Component({
   selector: 'app-navbar',
