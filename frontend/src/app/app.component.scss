@@ -2,5 +2,5 @@
 
 .main-content {
   min-height: calc(100vh - $navbar-height);
-  padding-top: calc($navbar-height / 2.5);
+  padding: calc($navbar-height / 2.5);
 }
