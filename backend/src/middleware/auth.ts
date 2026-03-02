@@ -2,16 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 
-// ── Extend Express Request so handlers can read req.user without re-decoding ─
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { userId: number };
-    }
-  }
-}
-
 /**
  * Middleware that verifies the Bearer access token.
  *
