@@ -1,9 +1,8 @@
 import { Application, Request, Response } from 'express';
-import { Order, OrderProduct } from '../types/order.types';
 import { OrderStore } from '../models/order';
 import { verifyAuthToken } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
-import { AppError } from '../utils/errorHandler';
+import { AppError, sendSuccess } from '../utils/response';
 import { parseId, requirePositiveInt } from '../utils/validate';
 
 const store = new OrderStore();
@@ -16,14 +15,14 @@ const index = asyncHandler(async (req: Request, res: Response) => {
   const userIdParam = req.query.userId as string | undefined;
   const userId = userIdParam ? parseId(userIdParam, 'userId filter') : undefined;
 
-  res.json(await store.index({ status, userId }));
+  sendSuccess(res, await store.index({ status, userId }), 'Orders fetched.');
 });
 
 const show = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id, 'order id');
   const order = await store.show(id);
   if (!order) throw new AppError(`order with id ${req.params.id} not found`, 404);
-  res.json(order);
+  sendSuccess(res, order, 'Order fetched.');
 });
 
 const create = asyncHandler(async (req: Request, res: Response) => {
@@ -32,7 +31,7 @@ const create = asyncHandler(async (req: Request, res: Response) => {
   if (req.body.status && !['active', 'complete'].includes(req.body.status))
     throw new AppError("status must be either 'active' or 'complete'", 400);
 
-  res.json(await store.create({ userId, status: req.body.status || 'active' }));
+  sendSuccess(res, await store.create({ userId, status: req.body.status || 'active' }), 'Order created.', 201);
 });
 
 const update = asyncHandler(async (req: Request, res: Response) => {
@@ -43,49 +42,49 @@ const update = asyncHandler(async (req: Request, res: Response) => {
 
   const updatedOrder = await store.update(id, req.body.status);
   if (!updatedOrder) throw new AppError(`order with id ${req.params.id} not found`, 404);
-  res.json(updatedOrder);
+  sendSuccess(res, updatedOrder, 'Order updated.');
 });
 
 const destroy = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id, 'order id');
   const deleted = await store.delete(id);
   if (!deleted) throw new AppError(`order with id ${req.params.id} not found`, 404);
-  res.json(deleted);
+  sendSuccess(res, deleted, 'Order deleted.');
 });
 
 const getOrderProducts = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id, 'order id');
-  res.json(await store.getOrderProducts(id));
+  sendSuccess(res, await store.getOrderProducts(id), 'Order products fetched.');
 });
 
 const currentOrderByUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = parseId(req.params.userId, 'userId');
-  res.json(await store.index({ status: 'active', userId }));
+  sendSuccess(res, await store.index({ status: 'active', userId }), 'Current order fetched.');
 });
 
 const completedOrdersByUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = parseId(req.params.userId, 'userId');
-  res.json(await store.index({ status: 'complete', userId }));
+  sendSuccess(res, await store.index({ status: 'complete', userId }), 'Completed orders fetched.');
 });
 
 const addProduct = asyncHandler(async (req: Request, res: Response) => {
-  const orderId = parseId(req.params.id, 'order id in URL');
+  const orderId   = parseId(req.params.id, 'order id in URL');
   const productId = requirePositiveInt(req.body.productId, 'productId');
-  const quantity = requirePositiveInt(req.body.quantity, 'quantity');
+  const quantity  = requirePositiveInt(req.body.quantity, 'quantity');
 
-  res.json(await store.addProduct({ orderId, productId, quantity }));
+  sendSuccess(res, await store.addProduct({ orderId, productId, quantity }), 'Product added to order.');
 });
 
 const orderRoutes = (app: Application) => {
   app.get('/orders', verifyAuthToken, index);
-  app.get('/orders/user/:userId/current', verifyAuthToken, currentOrderByUser);
+  app.get('/orders/user/:userId/current',   verifyAuthToken, currentOrderByUser);
   app.get('/orders/user/:userId/completed', verifyAuthToken, completedOrdersByUser);
-  app.get('/orders/:id/products', verifyAuthToken, getOrderProducts);
-  app.post('/orders/:id/products', verifyAuthToken, addProduct);
-  app.get('/orders/:id', verifyAuthToken, show);
-  app.post('/orders', verifyAuthToken, create);
-  app.put('/orders/:id', verifyAuthToken, update);
-  app.delete('/orders/:id', verifyAuthToken, destroy);
+  app.get('/orders/:id/products',           verifyAuthToken, getOrderProducts);
+  app.post('/orders/:id/products',          verifyAuthToken, addProduct);
+  app.get('/orders/:id',                    verifyAuthToken, show);
+  app.post('/orders',                       verifyAuthToken, create);
+  app.put('/orders/:id',                    verifyAuthToken, update);
+  app.delete('/orders/:id',                 verifyAuthToken, destroy);
 };
 
 export default orderRoutes;

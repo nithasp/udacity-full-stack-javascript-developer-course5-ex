@@ -28,8 +28,8 @@ export class CartApiService {
     return this.http.delete<CartApiItem>(`${this.baseUrl}/${cartItemId}`);
   }
 
-  clearCart(): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.baseUrl);
+  clearCart(): Observable<null> {
+    return this.http.delete<null>(this.baseUrl);
   }
 
   checkout(items: CheckoutItem[]): Observable<CheckoutResponse> {

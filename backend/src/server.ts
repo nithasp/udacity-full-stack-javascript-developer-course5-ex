@@ -8,7 +8,7 @@ import productRoutes from './handlers/products';
 import orderRoutes from './handlers/orders';
 import cartRoutes from './handlers/cart';
 import addressRoutes from './handlers/addresses';
-import { errorMiddleware } from './utils/errorHandler';
+import { errorMiddleware } from './utils/response';
 import { config } from './config';
 
 const app = express();

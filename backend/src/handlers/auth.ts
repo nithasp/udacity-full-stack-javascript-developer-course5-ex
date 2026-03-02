@@ -4,7 +4,7 @@ import { UserStore } from '../models/user';
 import { RefreshTokenStore } from '../models/refreshToken';
 import { verifyAuthToken } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
-import { AppError } from '../utils/errorHandler';
+import { AppError } from '../utils/response';
 import { config } from '../config';
 
 const userStore = new UserStore();
