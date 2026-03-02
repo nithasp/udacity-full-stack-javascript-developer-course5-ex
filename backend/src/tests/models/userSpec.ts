@@ -7,8 +7,8 @@ describe('User Model', () => {
   const testUser: User = {
     firstName: 'John',
     lastName: 'Doe',
-    username: 'johndoe',
-    password: 'password123'
+    username: 'johndoe_' + Date.now(),
+    password: 'password123',
   };
 
   it('should have an index method', () => {

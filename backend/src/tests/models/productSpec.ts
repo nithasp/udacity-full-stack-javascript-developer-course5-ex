@@ -16,13 +16,14 @@ describe('Product Model', () => {
     ],
     types: [
       {
+        _id: undefined,
         productId: 1001,
         color: 'Black',
         quantity: 50,
         price: 79.99,
         stock: 50,
-        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'
-      }
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+      },
     ],
     reviews: [
       {

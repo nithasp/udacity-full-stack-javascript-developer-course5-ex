@@ -25,17 +25,19 @@ app.use(cors({
 app.use(express.json());
 app.set('etag', false);
 
-// ── Rate limiting on auth endpoints ──────────────────────────────────────────
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,                   // max 20 requests per window per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    error: 'Too many requests. Please wait a moment and try again.',
-    code: 'rate_limited',
-  },
-});
+// ── Rate limiting on auth endpoints (disabled in test environment) ───────────
+const authLimiter = process.env.ENV === 'test'
+  ? undefined
+  : rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 20,                   // max 20 requests per window per IP
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: {
+        error: 'Too many requests. Please wait a moment and try again.',
+        code: 'rate_limited',
+      },
+    });
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.get('/', (_req: Request, res: Response) => {

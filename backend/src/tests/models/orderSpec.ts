@@ -18,8 +18,8 @@ describe('Order Model', () => {
     const user: User = {
       firstName: 'Test',
       lastName: 'User',
-      username: 'testorderuser',
-      password: 'password123'
+      username: 'testorderuser_' + Date.now(),
+      password: 'password123',
     };
     const createdUser = await userStore.create(user);
     testUserId = createdUser.id as number;
