@@ -74,7 +74,7 @@ export class AddressDialogComponent implements OnInit, OnChanges, OnDestroy {
 
   private loadAddresses(emitChange = false): void {
     this.isLoadingAddresses = true;
-    this.addressApi.getAll().subscribe({
+    this.addressApi.getAddresses().subscribe({
       next: (list) => {
         this.addresses = list;
         this.isLoadingAddresses = false;
@@ -170,7 +170,7 @@ export class AddressDialogComponent implements OnInit, OnChanges, OnDestroy {
     }).subscribe(confirmed => {
       if (!confirmed) return;
       this.isDeleting = true;
-      this.addressApi.delete(address.id).subscribe({
+      this.addressApi.deleteAddress(address.id).subscribe({
         next: () => {
           this.isDeleting = false;
           if (this.localSelectedId === address.id) {
@@ -202,7 +202,7 @@ export class AddressDialogComponent implements OnInit, OnChanges, OnDestroy {
     this.isSaving = true;
 
     if (this.dialogMode === 'edit' && this.editingAddressId !== null) {
-      this.addressApi.update(this.editingAddressId, this.addressForm).subscribe({
+      this.addressApi.updateAddress(this.editingAddressId, this.addressForm).subscribe({
         next: (updated) => {
           this.isSaving = false;
           const idx = this.addresses.findIndex(a => a.id === this.editingAddressId);
@@ -217,7 +217,7 @@ export class AddressDialogComponent implements OnInit, OnChanges, OnDestroy {
         },
       });
     } else {
-      this.addressApi.create(this.addressForm).subscribe({
+      this.addressApi.createAddress(this.addressForm).subscribe({
         next: (created) => {
           this.isSaving = false;
           this.localSelectedId = created.id;

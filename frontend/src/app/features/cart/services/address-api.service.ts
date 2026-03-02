@@ -10,23 +10,23 @@ export class AddressApiService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<AddressEntry[]> {
+  getAddresses(): Observable<AddressEntry[]> {
     return this.http.get<AddressEntry[]>(this.baseUrl);
   }
 
-  getOne(id: number): Observable<AddressEntry> {
+  getAddress(id: number): Observable<AddressEntry> {
     return this.http.get<AddressEntry>(`${this.baseUrl}/${id}`);
   }
 
-  create(form: AddressForm): Observable<AddressEntry> {
+  createAddress(form: AddressForm): Observable<AddressEntry> {
     return this.http.post<AddressEntry>(this.baseUrl, form);
   }
 
-  update(id: number, form: Partial<AddressForm>): Observable<AddressEntry> {
+  updateAddress(id: number, form: Partial<AddressForm>): Observable<AddressEntry> {
     return this.http.put<AddressEntry>(`${this.baseUrl}/${id}`, form);
   }
 
-  delete(id: number): Observable<AddressEntry> {
+  deleteAddress(id: number): Observable<AddressEntry> {
     return this.http.delete<AddressEntry>(`${this.baseUrl}/${id}`);
   }
 }

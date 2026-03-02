@@ -87,7 +87,7 @@ export class CartPageComponent implements OnInit, OnDestroy {
 
   private fetchAddresses(): void {
     this.isLoadingAddresses = true;
-    this.addressApi.getAll().subscribe({
+    this.addressApi.getAddresses().subscribe({
       next: (list) => {
         this.addresses = list;
         this.isLoadingAddresses = false;
