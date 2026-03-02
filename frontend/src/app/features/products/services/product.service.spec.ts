@@ -61,7 +61,7 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne('http://localhost:3000/products');
     expect(req.request.method).toBe('GET');
-    req.flush(mockBackendProducts);
+    req.flush({ status: 200, message: 'Products fetched.', data: mockBackendProducts });
   });
 
   it('should find a product by ID', () => {
@@ -74,6 +74,6 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne('http://localhost:3000/products/2');
     expect(req.request.method).toBe('GET');
-    req.flush(mockBackendProducts[1]);
+    req.flush({ status: 200, message: 'Product fetched.', data: mockBackendProducts[1] });
   });
 });

@@ -86,7 +86,7 @@ export const authInterceptor: HttpInterceptorFn = (
 
   return next(authReq).pipe(
     // Transparently unwrap { status, message, data } envelopes so services
-    // receive the flat payload they expect, with no per-service operators needed.
+    // receive the flat payload they expect, with no per-service mapping needed.
     map((event: HttpEvent<unknown>) => {
       if (event instanceof HttpResponse && isApiEnvelope(event.body)) {
         return event.clone({ body: event.body.data });
