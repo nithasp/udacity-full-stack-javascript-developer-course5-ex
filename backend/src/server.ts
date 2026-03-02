@@ -13,33 +13,21 @@ import { config } from './config';
 
 const app = express();
 
-// ── Security headers ─────────────────────────────────────────────────────────
 app.use(helmet());
-
-// ── CORS ─────────────────────────────────────────────────────────────────────
-app.use(cors({
-  origin: config.allowedOrigin,
-  credentials: true,
-}));
-
+app.use(cors({ origin: config.allowedOrigin, credentials: true }));
 app.use(express.json());
 app.set('etag', false);
 
-// ── Rate limiting on auth endpoints (disabled in test environment) ───────────
 const authLimiter = process.env.ENV === 'test'
   ? undefined
   : rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 20,                   // max 20 requests per window per IP
+      windowMs: 15 * 60 * 1000,
+      max: 20,
       standardHeaders: true,
       legacyHeaders: false,
-      message: {
-        error: 'Too many requests. Please wait a moment and try again.',
-        code: 'rate_limited',
-      },
+      message: { error: 'Too many requests. Please wait a moment and try again.', code: 'rate_limited' },
     });
 
-// ── Routes ───────────────────────────────────────────────────────────────────
 app.get('/', (_req: Request, res: Response) => {
   res.json({ message: 'Storefront API is running!' });
 });
@@ -51,7 +39,6 @@ orderRoutes(app);
 cartRoutes(app);
 addressRoutes(app);
 
-// ── Global error handler (must be last) ──────────────────────────────────────
 app.use(errorMiddleware);
 
 if (process.env.ENV !== 'test') {

@@ -1,22 +1,20 @@
 # API Testing (cURL)
 
-> Base URL: `http://localhost:3000` -- run `npm run watch` first.
+> Base URL: `http://localhost:3000` — run `npm run watch` first.
 
 ---
 
 ## Quick Walkthrough
 
-Run these in order to seed data, then verify the two special features.
-
 ```bash
-# 1. Create a user and save the token
-curl -s -X POST http://localhost:3000/users \
+# 1. Register and save tokens
+curl -s -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"first_name":"John","last_name":"Doe","username":"johndoe","password":"pass123"}'
+  -d '{"firstName":"John","lastName":"Doe","username":"johndoe","password":"pass1234"}'
 
-TOKEN="paste.your.token.here"
+TOKEN="your.access.token"
 
-# 2. Create a few products
+# 2. Create products
 curl -s -X POST http://localhost:3000/products \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"name":"Keyboard","price":49.99,"category":"electronics"}'
@@ -25,64 +23,66 @@ curl -s -X POST http://localhost:3000/products \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"name":"Mouse","price":29.99,"category":"electronics"}'
 
-curl -s -X POST http://localhost:3000/products \
+# 3. Add items to cart and checkout
+curl -s -X POST http://localhost:3000/cart \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name":"Monitor","price":299.99,"category":"electronics"}'
+  -d '{"productId":1,"quantity":2}'
 
-# 3. Create an order and add products to it
-curl -s -X POST http://localhost:3000/orders \
+curl -s -X POST http://localhost:3000/cart/checkout \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"user_id":1}'
+  -d '{"items":[{"productId":1,"quantity":2},{"productId":2,"quantity":1}]}'
 
-curl -s -X POST http://localhost:3000/orders/1/products \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"product_id":1,"quantity":5}'
-
-curl -s -X POST http://localhost:3000/orders/1/products \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"product_id":2,"quantity":2}'
-
-curl -s -X POST http://localhost:3000/orders/1/products \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"product_id":3,"quantity":1}'
-
-# 4. Complete the order
-curl -s -X PUT http://localhost:3000/orders/1 \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"status":"complete"}'
-
-# 5. Verify: most popular products (sorted by total quantity ordered)
+# 4. Most popular products
 curl http://localhost:3000/products/popular
-
-# 6. Verify: user show includes 5 most recent purchases
-curl http://localhost:3000/users/1 -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
-## All Endpoints
+## Auth
 
-### 1. Users
-
-**Create user** (returns a JWT token -- save it):
+**Register** (returns `accessToken` + `refreshToken`):
 ```bash
-curl -X POST http://localhost:3000/users \
+curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"first_name":"John","last_name":"Doe","username":"johndoe","password":"pass123"}'
+  -d '{"firstName":"John","lastName":"Doe","username":"johndoe","password":"pass1234"}'
 ```
 
-**Authenticate** (also returns a token):
+**Login:**
 ```bash
-curl -X POST http://localhost:3000/users/authenticate \
+curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"johndoe","password":"pass123"}'
+  -d '{"username":"johndoe","password":"pass1234"}'
 ```
 
-Save the token from either response, then use it as `TOKEN` below:
-
+**Refresh access token:**
 ```bash
-TOKEN="paste.your.token.here"
+curl -X POST http://localhost:3000/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"your.refresh.token"}'
 ```
+
+**Get current user:**
+```bash
+curl http://localhost:3000/auth/me -H "Authorization: Bearer $TOKEN"
+```
+
+**Logout:**
+```bash
+curl -X POST http://localhost:3000/auth/logout \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"your.refresh.token"}'
+```
+
+**Logout all sessions:**
+```bash
+curl -X POST http://localhost:3000/auth/logout-all -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## Users
+
+> All user routes require `Authorization: Bearer <token>`.
 
 **List all users:**
 ```bash
@@ -94,12 +94,18 @@ curl http://localhost:3000/users -H "Authorization: Bearer $TOKEN"
 curl http://localhost:3000/users/1 -H "Authorization: Bearer $TOKEN"
 ```
 
+**Create user (admin):**
+```bash
+curl -X POST http://localhost:3000/users \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"firstName":"Jane","lastName":"Smith","username":"janesmith","password":"pass1234"}'
+```
+
 **Update user:**
 ```bash
 curl -X PUT http://localhost:3000/users/1 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"first_name":"Jane"}'
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"firstName":"Jane"}'
 ```
 
 **Delete user:**
@@ -107,106 +113,154 @@ curl -X PUT http://localhost:3000/users/1 \
 curl -X DELETE http://localhost:3000/users/1 -H "Authorization: Bearer $TOKEN"
 ```
 
-### 2. Products
+---
+
+## Products
 
 **Create product:**
 ```bash
 curl -X POST http://localhost:3000/products \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"name":"Widget","price":9.99,"category":"gadgets"}'
 ```
 
-**List all products:**
+**List all / filter by category:**
 ```bash
 curl http://localhost:3000/products
-```
-
-**Filter by category:**
-```bash
 curl "http://localhost:3000/products?category=gadgets"
 ```
 
-**Most popular products** (ranked by total quantity ordered):
+**Most popular (ranked by total quantity ordered):**
 ```bash
 curl http://localhost:3000/products/popular
 ```
 
-**Get product by id:**
+**Get / Update / Delete:**
 ```bash
 curl http://localhost:3000/products/1
-```
 
-**Update product:**
-```bash
 curl -X PUT http://localhost:3000/products/1 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"price":14.99}'
-```
 
-**Delete product:**
-```bash
 curl -X DELETE http://localhost:3000/products/1 -H "Authorization: Bearer $TOKEN"
 ```
 
-### 3. Orders
+---
+
+## Orders
 
 **Create order:**
 ```bash
 curl -X POST http://localhost:3000/orders \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"user_id":1}'
 ```
 
 **Add product to order:**
 ```bash
 curl -X POST http://localhost:3000/orders/1/products \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"product_id":1,"quantity":3}'
 ```
 
-**List all orders:**
+**List / filter orders:**
 ```bash
 curl http://localhost:3000/orders -H "Authorization: Bearer $TOKEN"
-```
-
-**Filter orders:**
-```bash
 curl "http://localhost:3000/orders?status=active&userId=1" -H "Authorization: Bearer $TOKEN"
 ```
 
-**Get order by id:**
+**Get / Update / Delete:**
 ```bash
 curl http://localhost:3000/orders/1 -H "Authorization: Bearer $TOKEN"
-```
-
-**Get products in order:**
-```bash
 curl http://localhost:3000/orders/1/products -H "Authorization: Bearer $TOKEN"
+
+curl -X PUT http://localhost:3000/orders/1 \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"status":"complete"}'
+
+curl -X DELETE http://localhost:3000/orders/1 -H "Authorization: Bearer $TOKEN"
 ```
 
-**Current (active) orders for user:**
+**User order queries:**
 ```bash
-curl http://localhost:3000/orders/user/1/current -H "Authorization: Bearer $TOKEN"
-```
-
-**Completed orders for user:**
-```bash
+curl http://localhost:3000/orders/user/1/current   -H "Authorization: Bearer $TOKEN"
 curl http://localhost:3000/orders/user/1/completed -H "Authorization: Bearer $TOKEN"
 ```
 
-**Complete an order:**
+---
+
+## Cart
+
+> All cart routes require `Authorization: Bearer <token>`.
+
+**Get cart:**
 ```bash
-curl -X PUT http://localhost:3000/orders/1 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"complete"}'
+curl http://localhost:3000/cart -H "Authorization: Bearer $TOKEN"
 ```
 
-**Delete order:**
+**Add item** (increments quantity if same product+type already exists):
 ```bash
-curl -X DELETE http://localhost:3000/orders/1 -H "Authorization: Bearer $TOKEN"
+curl -X POST http://localhost:3000/cart \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"productId":1,"quantity":2}'
+```
+
+**Update item quantity:**
+```bash
+curl -X PUT http://localhost:3000/cart/1 \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"quantity":5}'
+```
+
+**Remove item:**
+```bash
+curl -X DELETE http://localhost:3000/cart/1 -H "Authorization: Bearer $TOKEN"
+```
+
+**Clear cart:**
+```bash
+curl -X DELETE http://localhost:3000/cart -H "Authorization: Bearer $TOKEN"
+```
+
+**Checkout** (creates a completed order and clears the cart):
+```bash
+curl -X POST http://localhost:3000/cart/checkout \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"items":[{"productId":1,"quantity":2},{"productId":2,"quantity":1}]}'
+```
+
+---
+
+## Addresses
+
+> All address routes require `Authorization: Bearer <token>`.
+
+**List addresses:**
+```bash
+curl http://localhost:3000/addresses -H "Authorization: Bearer $TOKEN"
+```
+
+**Get address:**
+```bash
+curl http://localhost:3000/addresses/1 -H "Authorization: Bearer $TOKEN"
+```
+
+**Create address:**
+```bash
+curl -X POST http://localhost:3000/addresses \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"fullName":"John Doe","address":"123 Main St","city":"New York","phone":"555-1234","label":"home","isDefault":true}'
+```
+
+**Update address:**
+```bash
+curl -X PUT http://localhost:3000/addresses/1 \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"city":"Brooklyn","isDefault":true}'
+```
+
+**Delete address:**
+```bash
+curl -X DELETE http://localhost:3000/addresses/1 -H "Authorization: Bearer $TOKEN"
 ```

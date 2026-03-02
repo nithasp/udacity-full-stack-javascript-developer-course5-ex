@@ -6,19 +6,7 @@ export class AppError extends Error {
   }
 }
 
-/**
- * Send a successful API response in the standard envelope shape.
- *
- * @example
- * sendSuccess(res, user, 'User fetched.');
- * sendSuccess(res, newItem, 'Item created.', 201);
- */
-export function sendSuccess<T>(
-  res: Response,
-  data: T,
-  message: string,
-  statusCode = 200
-): void {
+export function sendSuccess<T>(res: Response, data: T, message: string, statusCode = 200): void {
   res.status(statusCode).json({ status: statusCode, message, data });
 }
 

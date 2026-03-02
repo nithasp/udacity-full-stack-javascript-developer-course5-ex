@@ -1,105 +1,76 @@
 import client from '../database';
 import { CartItem, UpsertCartItemPayload } from '../types/cart.types';
 
-export { CartItem, UpsertCartItemPayload };
-
 export class CartStore {
   async getByUser(userId: number): Promise<CartItem[]> {
-    try {
-      const { rows } = await client.query(
-        `SELECT
-           ci.*,
-           p.name          AS product_name,
-           p.price         AS product_price,
-           p.category      AS product_category,
-           p.image         AS product_image,
-           p.description   AS product_description,
-           p.preview_img   AS product_preview_img,
-           p.types         AS product_types,
-           p.reviews       AS product_reviews,
-           p.overall_rating AS product_overall_rating,
-           p.stock         AS product_stock,
-           p.is_active     AS product_is_active,
-           p.shop_id       AS product_shop_id,
-           p.shop_name     AS product_shop_name
-         FROM cart_items ci
-         JOIN products p ON ci.product_id = p.id
-         WHERE ci.user_id = $1
-         ORDER BY ci.created_at ASC`,
-        [userId]
-      );
-      return rows.map((row) => this.mapRow(row));
-    } catch (err) {
-      throw new Error(`Cannot get cart items for user ${userId}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `SELECT
+         ci.*,
+         p.name          AS product_name,
+         p.price         AS product_price,
+         p.category      AS product_category,
+         p.image         AS product_image,
+         p.description   AS product_description,
+         p.preview_img   AS product_preview_img,
+         p.types         AS product_types,
+         p.reviews       AS product_reviews,
+         p.overall_rating AS product_overall_rating,
+         p.stock         AS product_stock,
+         p.is_active     AS product_is_active,
+         p.shop_id       AS product_shop_id,
+         p.shop_name     AS product_shop_name
+       FROM cart_items ci
+       JOIN products p ON ci.product_id = p.id
+       WHERE ci.user_id = $1
+       ORDER BY ci.created_at ASC`,
+      [userId]
+    );
+    return rows.map((row) => this.mapRow(row));
   }
 
-  /**
-   * Insert a new cart item or add to the existing quantity if the
-   * (user_id, product_id, type_id) combination already exists.
-   */
   async upsert(userId: number, payload: UpsertCartItemPayload): Promise<CartItem> {
-    try {
-      const { rows } = await client.query(
-        `INSERT INTO cart_items (user_id, product_id, quantity, type_id, selected_type, shop_id, shop_name)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT ON CONSTRAINT cart_items_user_product_type_unique
-           DO UPDATE SET
-             quantity      = cart_items.quantity + EXCLUDED.quantity,
-             selected_type = EXCLUDED.selected_type,
-             shop_id       = EXCLUDED.shop_id,
-             shop_name     = EXCLUDED.shop_name,
-             updated_at    = CURRENT_TIMESTAMP
-         RETURNING *`,
-        [
-          userId,
-          payload.productId,
-          payload.quantity,
-          payload.typeId ?? '',
-          payload.selectedType ? JSON.stringify(payload.selectedType) : null,
-          payload.shopId ?? null,
-          payload.shopName ?? null,
-        ]
-      );
-      return this.mapRow(rows[0]);
-    } catch (err) {
-      throw new Error(`Cannot upsert cart item: ${err}`);
-    }
+    const { rows } = await client.query(
+      `INSERT INTO cart_items (user_id, product_id, quantity, type_id, selected_type, shop_id, shop_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT ON CONSTRAINT cart_items_user_product_type_unique
+         DO UPDATE SET
+           quantity      = cart_items.quantity + EXCLUDED.quantity,
+           selected_type = EXCLUDED.selected_type,
+           shop_id       = EXCLUDED.shop_id,
+           shop_name     = EXCLUDED.shop_name,
+           updated_at    = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [
+        userId,
+        payload.productId,
+        payload.quantity,
+        payload.typeId ?? '',
+        payload.selectedType ? JSON.stringify(payload.selectedType) : null,
+        payload.shopId ?? null,
+        payload.shopName ?? null,
+      ]
+    );
+    return this.mapRow(rows[0]);
   }
 
   async updateQuantity(cartItemId: number, userId: number, quantity: number): Promise<CartItem | null> {
-    try {
-      const { rows } = await client.query(
-        `UPDATE cart_items
-         SET quantity = $1, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $2 AND user_id = $3
-         RETURNING *`,
-        [quantity, cartItemId, userId]
-      );
-      return rows[0] ? this.mapRow(rows[0]) : null;
-    } catch (err) {
-      throw new Error(`Cannot update cart item ${cartItemId}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `UPDATE cart_items SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 RETURNING *`,
+      [quantity, cartItemId, userId]
+    );
+    return rows[0] ? this.mapRow(rows[0]) : null;
   }
 
   async remove(cartItemId: number, userId: number): Promise<CartItem | null> {
-    try {
-      const { rows } = await client.query(
-        `DELETE FROM cart_items WHERE id = $1 AND user_id = $2 RETURNING *`,
-        [cartItemId, userId]
-      );
-      return rows[0] ? this.mapRow(rows[0]) : null;
-    } catch (err) {
-      throw new Error(`Cannot remove cart item ${cartItemId}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `DELETE FROM cart_items WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [cartItemId, userId]
+    );
+    return rows[0] ? this.mapRow(rows[0]) : null;
   }
 
   async clearByUser(userId: number): Promise<void> {
-    try {
-      await client.query(`DELETE FROM cart_items WHERE user_id = $1`, [userId]);
-    } catch (err) {
-      throw new Error(`Cannot clear cart for user ${userId}: ${err}`);
-    }
+    await client.query(`DELETE FROM cart_items WHERE user_id = $1`, [userId]);
   }
 
   private normalizeType(t: Record<string, unknown>) {
@@ -129,25 +100,23 @@ export class CartStore {
       updatedAt: row.updated_at,
     };
 
-    // Joined product fields — present when fetching full cart (getByUser)
-    if (row.product_name !== undefined) item['productName'] = row.product_name;
-    if (row.product_price !== undefined) item['productPrice'] = row.product_price;
-    if (row.product_category !== undefined) item['productCategory'] = row.product_category;
-    if (row.product_image !== undefined) item['productImage'] = row.product_image;
-    if (row.product_description !== undefined) item['productDescription'] = row.product_description;
-    if (row.product_preview_img !== undefined) item['productPreviewImg'] = row.product_preview_img;
+    // Joined product fields — only present when fetching via getByUser
+    if (row.product_name !== undefined)         item['productName']        = row.product_name;
+    if (row.product_price !== undefined)        item['productPrice']       = row.product_price;
+    if (row.product_category !== undefined)     item['productCategory']    = row.product_category;
+    if (row.product_image !== undefined)        item['productImage']       = row.product_image;
+    if (row.product_description !== undefined)  item['productDescription'] = row.product_description;
+    if (row.product_preview_img !== undefined)  item['productPreviewImg']  = row.product_preview_img;
     if (row.product_types !== undefined) {
       const rawTypes = row.product_types as Record<string, unknown>[];
-      item['productTypes'] = Array.isArray(rawTypes)
-        ? rawTypes.map((t) => this.normalizeType(t))
-        : rawTypes;
+      item['productTypes'] = Array.isArray(rawTypes) ? rawTypes.map((t) => this.normalizeType(t)) : rawTypes;
     }
-    if (row.product_reviews !== undefined) item['productReviews'] = row.product_reviews;
+    if (row.product_reviews !== undefined)      item['productReviews']     = row.product_reviews;
     if (row.product_overall_rating !== undefined) item['productOverallRating'] = row.product_overall_rating;
-    if (row.product_stock !== undefined) item['productStock'] = row.product_stock;
-    if (row.product_is_active !== undefined) item['productIsActive'] = row.product_is_active;
-    if (row.product_shop_id !== undefined) item['productShopId'] = row.product_shop_id;
-    if (row.product_shop_name !== undefined) item['productShopName'] = row.product_shop_name;
+    if (row.product_stock !== undefined)        item['productStock']       = row.product_stock;
+    if (row.product_is_active !== undefined)    item['productIsActive']    = row.product_is_active;
+    if (row.product_shop_id !== undefined)      item['productShopId']      = row.product_shop_id;
+    if (row.product_shop_name !== undefined)    item['productShopName']    = row.product_shop_name;
 
     return item as unknown as CartItem;
   }

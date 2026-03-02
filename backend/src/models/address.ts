@@ -1,31 +1,21 @@
 import client from '../database';
 import { Address, AddressForm } from '../types/address.types';
 
-export { Address, AddressForm };
-
 export class AddressStore {
   async getByUser(userId: number): Promise<Address[]> {
-    try {
-      const { rows } = await client.query(
-        `SELECT * FROM addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at ASC`,
-        [userId]
-      );
-      return rows.map(this.mapRow);
-    } catch (err) {
-      throw new Error(`Cannot get addresses for user ${userId}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `SELECT * FROM addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at ASC`,
+      [userId]
+    );
+    return rows.map(this.mapRow);
   }
 
   async show(id: number, userId: number): Promise<Address | null> {
-    try {
-      const { rows } = await client.query(
-        `SELECT * FROM addresses WHERE id = $1 AND user_id = $2`,
-        [id, userId]
-      );
-      return rows[0] ? this.mapRow(rows[0]) : null;
-    } catch (err) {
-      throw new Error(`Cannot get address ${id}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `SELECT * FROM addresses WHERE id = $1 AND user_id = $2`,
+      [id, userId]
+    );
+    return rows[0] ? this.mapRow(rows[0]) : null;
   }
 
   async create(userId: number, form: AddressForm): Promise<Address> {
@@ -34,13 +24,9 @@ export class AddressStore {
       await poolClient.query('BEGIN');
 
       if (form.isDefault) {
-        await poolClient.query(
-          `UPDATE addresses SET is_default = false WHERE user_id = $1`,
-          [userId]
-        );
+        await poolClient.query(`UPDATE addresses SET is_default = false WHERE user_id = $1`, [userId]);
       }
 
-      // If this is the first address, make it default automatically
       const { rows: existing } = await poolClient.query(
         `SELECT COUNT(*) FROM addresses WHERE user_id = $1`,
         [userId]
@@ -49,24 +35,15 @@ export class AddressStore {
 
       const { rows } = await poolClient.query(
         `INSERT INTO addresses (user_id, full_name, phone, address, city, label, is_default)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING *`,
-        [
-          userId,
-          form.fullName,
-          form.phone ?? null,
-          form.address,
-          form.city,
-          form.label,
-          form.isDefault || isFirst,
-        ]
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [userId, form.fullName, form.phone ?? null, form.address, form.city, form.label, form.isDefault || isFirst]
       );
 
       await poolClient.query('COMMIT');
       return this.mapRow(rows[0]);
     } catch (err) {
       await poolClient.query('ROLLBACK');
-      throw new Error(`Cannot create address: ${err}`);
+      throw err;
     } finally {
       poolClient.release();
     }
@@ -78,30 +55,25 @@ export class AddressStore {
       await poolClient.query('BEGIN');
 
       if (form.isDefault) {
-        await poolClient.query(
-          `UPDATE addresses SET is_default = false WHERE user_id = $1`,
-          [userId]
-        );
+        await poolClient.query(`UPDATE addresses SET is_default = false WHERE user_id = $1`, [userId]);
       }
 
       const fields: string[] = [];
       const values: (string | number | boolean | null)[] = [];
       let i = 1;
 
-      if (form.fullName !== undefined) { fields.push(`full_name = $${i++}`); values.push(form.fullName); }
-      if (form.phone !== undefined)    { fields.push(`phone = $${i++}`);     values.push(form.phone ?? null); }
-      if (form.address !== undefined)  { fields.push(`address = $${i++}`);   values.push(form.address); }
-      if (form.city !== undefined)     { fields.push(`city = $${i++}`);      values.push(form.city); }
-      if (form.label !== undefined)    { fields.push(`label = $${i++}`);     values.push(form.label); }
-      if (form.isDefault !== undefined){ fields.push(`is_default = $${i++}`);values.push(form.isDefault); }
+      if (form.fullName !== undefined) { fields.push(`full_name = $${i++}`);  values.push(form.fullName); }
+      if (form.phone !== undefined)    { fields.push(`phone = $${i++}`);      values.push(form.phone ?? null); }
+      if (form.address !== undefined)  { fields.push(`address = $${i++}`);    values.push(form.address); }
+      if (form.city !== undefined)     { fields.push(`city = $${i++}`);       values.push(form.city); }
+      if (form.label !== undefined)    { fields.push(`label = $${i++}`);      values.push(form.label); }
+      if (form.isDefault !== undefined){ fields.push(`is_default = $${i++}`); values.push(form.isDefault); }
 
       fields.push(`updated_at = NOW()`);
-
       values.push(id, userId);
+
       const { rows } = await poolClient.query(
-        `UPDATE addresses SET ${fields.join(', ')}
-         WHERE id = $${i} AND user_id = $${i + 1}
-         RETURNING *`,
+        `UPDATE addresses SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
         values
       );
 
@@ -109,7 +81,7 @@ export class AddressStore {
       return rows[0] ? this.mapRow(rows[0]) : null;
     } catch (err) {
       await poolClient.query('ROLLBACK');
-      throw new Error(`Cannot update address ${id}: ${err}`);
+      throw err;
     } finally {
       poolClient.release();
     }
@@ -130,13 +102,10 @@ export class AddressStore {
         return null;
       }
 
-      // If the deleted address was default, promote the oldest remaining
       if (deleted[0].is_default) {
         await poolClient.query(
           `UPDATE addresses SET is_default = true
-           WHERE id = (
-             SELECT id FROM addresses WHERE user_id = $1 ORDER BY created_at ASC LIMIT 1
-           )`,
+           WHERE id = (SELECT id FROM addresses WHERE user_id = $1 ORDER BY created_at ASC LIMIT 1)`,
           [userId]
         );
       }
@@ -145,7 +114,7 @@ export class AddressStore {
       return this.mapRow(deleted[0]);
     } catch (err) {
       await poolClient.query('ROLLBACK');
-      throw new Error(`Cannot delete address ${id}: ${err}`);
+      throw err;
     } finally {
       poolClient.release();
     }

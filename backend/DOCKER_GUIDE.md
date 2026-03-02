@@ -33,7 +33,7 @@ Server runs at `http://localhost:3000`
 
 - Pulls `postgres:14-alpine` image (first time only)
 - Creates container `storefront-postgres` on port `5432`
-- Creates `storefront_dev` database (main) and `storefront_test` database (via `init-db.sh`)
+- Creates `storefront_dev` (main) and `storefront_test` databases via `init-db.sh`
 - Data persists in a Docker volume
 
 ## Common Commands

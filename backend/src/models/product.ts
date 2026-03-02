@@ -1,118 +1,88 @@
 import client from '../database';
 import { Product } from '../types/product.types';
 
-export { Product };
-
 export class ProductStore {
   async index(): Promise<Product[]> {
-    try {
-      const { rows } = await client.query('SELECT * FROM products');
-      return rows.map((row) => this.mapRow(row));
-    } catch (err) {
-      throw new Error(`Cannot get products: ${err}`);
-    }
+    const { rows } = await client.query('SELECT * FROM products');
+    return rows.map((row) => this.mapRow(row));
   }
 
   async show(id: number): Promise<Product> {
-    try {
-      const { rows } = await client.query('SELECT * FROM products WHERE id=$1', [id]);
-      return rows[0] ? this.mapRow(rows[0]) : rows[0];
-    } catch (err) {
-      throw new Error(`Cannot get product ${id}: ${err}`);
-    }
+    const { rows } = await client.query('SELECT * FROM products WHERE id=$1', [id]);
+    return rows[0] ? this.mapRow(rows[0]) : rows[0];
   }
 
   async create(product: Product): Promise<Product> {
-    try {
-      const { rows } = await client.query(
-        `INSERT INTO products (name, price, category, image, description, preview_img, types, reviews, overall_rating, stock, is_active, shop_id, shop_name)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
-        [
-          product.name,
-          product.price,
-          product.category || null,
-          product.image || null,
-          product.description || null,
-          JSON.stringify(product.previewImg || []),
-          JSON.stringify(product.types || []),
-          JSON.stringify(product.reviews || []),
-          product.overallRating || 0,
-          product.stock || 0,
-          product.isActive !== undefined ? product.isActive : true,
-          product.shopId || null,
-          product.shopName || null,
-        ]
-      );
-      return this.mapRow(rows[0]);
-    } catch (err) {
-      throw new Error(`Cannot create product ${product.name}: ${err}`);
-    }
+    const { rows } = await client.query(
+      `INSERT INTO products (name, price, category, image, description, preview_img, types, reviews, overall_rating, stock, is_active, shop_id, shop_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [
+        product.name,
+        product.price,
+        product.category || null,
+        product.image || null,
+        product.description || null,
+        JSON.stringify(product.previewImg || []),
+        JSON.stringify(product.types || []),
+        JSON.stringify(product.reviews || []),
+        product.overallRating || 0,
+        product.stock || 0,
+        product.isActive !== undefined ? product.isActive : true,
+        product.shopId || null,
+        product.shopName || null,
+      ]
+    );
+    return this.mapRow(rows[0]);
   }
 
   async update(id: number, product: Partial<Product>): Promise<Product> {
-    try {
-      const fields: string[] = [];
-      const values: (string | number | boolean)[] = [];
-      let i = 1;
+    const fields: string[] = [];
+    const values: (string | number | boolean)[] = [];
+    let i = 1;
 
-      if (product.name) { fields.push(`name=$${i++}`); values.push(product.name); }
-      if (product.price !== undefined) { fields.push(`price=$${i++}`); values.push(product.price); }
-      if (product.category !== undefined) { fields.push(`category=$${i++}`); values.push(product.category as string); }
-      if (product.image !== undefined) { fields.push(`image=$${i++}`); values.push(product.image as string); }
-      if (product.description !== undefined) { fields.push(`description=$${i++}`); values.push(product.description as string); }
-      if (product.previewImg !== undefined) { fields.push(`preview_img=$${i++}`); values.push(JSON.stringify(product.previewImg)); }
-      if (product.types !== undefined) { fields.push(`types=$${i++}`); values.push(JSON.stringify(product.types)); }
-      if (product.reviews !== undefined) { fields.push(`reviews=$${i++}`); values.push(JSON.stringify(product.reviews)); }
-      if (product.overallRating !== undefined) { fields.push(`overall_rating=$${i++}`); values.push(product.overallRating); }
-      if (product.stock !== undefined) { fields.push(`stock=$${i++}`); values.push(product.stock); }
-      if (product.isActive !== undefined) { fields.push(`is_active=$${i++}`); values.push(product.isActive); }
-      if (product.shopId !== undefined) { fields.push(`shop_id=$${i++}`); values.push(product.shopId as string); }
-      if (product.shopName !== undefined) { fields.push(`shop_name=$${i++}`); values.push(product.shopName as string); }
+    if (product.name)                  { fields.push(`name=$${i++}`);           values.push(product.name); }
+    if (product.price !== undefined)   { fields.push(`price=$${i++}`);          values.push(product.price); }
+    if (product.category !== undefined){ fields.push(`category=$${i++}`);       values.push(product.category as string); }
+    if (product.image !== undefined)   { fields.push(`image=$${i++}`);          values.push(product.image as string); }
+    if (product.description !== undefined){ fields.push(`description=$${i++}`); values.push(product.description as string); }
+    if (product.previewImg !== undefined) { fields.push(`preview_img=$${i++}`); values.push(JSON.stringify(product.previewImg)); }
+    if (product.types !== undefined)   { fields.push(`types=$${i++}`);          values.push(JSON.stringify(product.types)); }
+    if (product.reviews !== undefined) { fields.push(`reviews=$${i++}`);        values.push(JSON.stringify(product.reviews)); }
+    if (product.overallRating !== undefined){ fields.push(`overall_rating=$${i++}`); values.push(product.overallRating); }
+    if (product.stock !== undefined)   { fields.push(`stock=$${i++}`);          values.push(product.stock); }
+    if (product.isActive !== undefined){ fields.push(`is_active=$${i++}`);      values.push(product.isActive); }
+    if (product.shopId !== undefined)  { fields.push(`shop_id=$${i++}`);        values.push(product.shopId as string); }
+    if (product.shopName !== undefined){ fields.push(`shop_name=$${i++}`);      values.push(product.shopName as string); }
 
-      values.push(id);
-      const { rows } = await client.query(
-        `UPDATE products SET ${fields.join(', ')} WHERE id=$${i} RETURNING *`,
-        values
-      );
-      return rows[0] ? this.mapRow(rows[0]) : rows[0];
-    } catch (err) {
-      throw new Error(`Cannot update product ${id}: ${err}`);
-    }
+    values.push(id);
+    const { rows } = await client.query(
+      `UPDATE products SET ${fields.join(', ')} WHERE id=$${i} RETURNING *`,
+      values
+    );
+    return rows[0] ? this.mapRow(rows[0]) : rows[0];
   }
 
   async delete(id: number): Promise<Product> {
-    try {
-      const { rows } = await client.query('DELETE FROM products WHERE id=$1 RETURNING *', [id]);
-      return rows[0] ? this.mapRow(rows[0]) : rows[0];
-    } catch (err) {
-      throw new Error(`Cannot delete product ${id}: ${err}`);
-    }
+    const { rows } = await client.query('DELETE FROM products WHERE id=$1 RETURNING *', [id]);
+    return rows[0] ? this.mapRow(rows[0]) : rows[0];
   }
 
   async mostPopular(limit: number = 5): Promise<Product[]> {
-    try {
-      const { rows } = await client.query(
-        `SELECT p.*, COALESCE(SUM(op.quantity), 0) AS total_quantity
-         FROM products p LEFT JOIN order_products op ON p.id = op.product_id
-         GROUP BY p.id ORDER BY total_quantity DESC LIMIT $1`,
-        [limit]
-      );
-      return rows.map((row) => this.mapRow(row));
-    } catch (err) {
-      throw new Error(`Cannot get most popular products: ${err}`);
-    }
+    const { rows } = await client.query(
+      `SELECT p.*, COALESCE(SUM(op.quantity), 0) AS total_quantity
+       FROM products p LEFT JOIN order_products op ON p.id = op.product_id
+       GROUP BY p.id ORDER BY total_quantity DESC LIMIT $1`,
+      [limit]
+    );
+    return rows.map((row) => this.mapRow(row));
   }
 
   async getByCategory(category: string): Promise<Product[]> {
-    try {
-      const { rows } = await client.query(
-        'SELECT * FROM products WHERE LOWER(category) = LOWER($1)',
-        [category]
-      );
-      return rows.map((row) => this.mapRow(row));
-    } catch (err) {
-      throw new Error(`Cannot get products by category: ${err}`);
-    }
+    const { rows } = await client.query(
+      'SELECT * FROM products WHERE LOWER(category) = LOWER($1)',
+      [category]
+    );
+    return rows.map((row) => this.mapRow(row));
   }
 
   private normalizeType(t: Record<string, unknown>) {
