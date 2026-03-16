@@ -1,5 +1,11 @@
 # MyStore — Full-Stack E-Commerce App
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/tree/main)
+
+> **Hosted Frontend:** [http://YOUR_S3_BUCKET_NAME.s3-website-us-east-1.amazonaws.com](http://YOUR_S3_BUCKET_NAME.s3-website-us-east-1.amazonaws.com)
+>
+> **Hosted API:** [http://YOUR_EB_ENV_URL](http://YOUR_EB_ENV_URL)
+
 An e-commerce single-page application built with **Angular 18** and backed by a **Node/Express + PostgreSQL** REST API. Users can register and log in, browse a product catalog, view product details, add items to a shopping cart, manage quantities, and complete a checkout flow with an order confirmation page.
 
 ## Features
@@ -25,7 +31,7 @@ An e-commerce single-page application built with **Angular 18** and backed by a 
 ### 1. Backend
 
 ```bash
-cd backend
+cd app/backend
 npm install
 docker-compose up -d          # starts PostgreSQL (port 5432)
 cp .env.example .env          # defaults work out of the box with Docker
@@ -38,7 +44,7 @@ npm run watch                 # starts API server at http://localhost:3000
 ### 2. Frontend
 
 ```bash
-cd frontend
+cd app/frontend
 npm install
 ng serve                      # starts the app at http://localhost:4200
 ```
@@ -49,36 +55,43 @@ ng serve                      # starts the app at http://localhost:4200
 
 ```bash
 # Backend tests (Jasmine)
-cd backend
+cd app/backend
 npm test
 
 # Frontend tests (Karma + Jasmine)
-cd frontend
+cd app/frontend
 ng test
 ```
 
 ## Project Structure
 
 ```
-├── backend/                  # Node/Express REST API + PostgreSQL
-│   ├── src/
-│   │   ├── handlers/         # Route handlers (auth, products, cart, orders, addresses)
-│   │   ├── models/           # Database models
-│   │   ├── middleware/        # JWT auth middleware
-│   │   └── types/            # TypeScript interfaces
-│   └── migrations/           # Database migration files
-│
-└── frontend/                 # Angular 18 SPA
-    └── src/app/
-        ├── core/             # Guards, interceptors, services (auth, cart, UI), models
-        ├── features/
-        │   ├── auth/         # Login & Register (lazy-loaded)
-        │   ├── products/     # Product list & detail (lazy-loaded)
-        │   └── cart/         # Cart page & order confirmation (lazy-loaded)
-        └── shared/           # Navbar, loading spinner, confirm dialog, form controls, pipes
+├── app/
+│   ├── backend/              # Node/Express REST API + PostgreSQL
+│   │   ├── src/
+│   │   │   ├── handlers/     # Route handlers (auth, products, cart, orders, addresses)
+│   │   │   ├── models/       # Database models
+│   │   │   ├── middleware/   # JWT auth middleware
+│   │   │   └── types/        # TypeScript interfaces
+│   │   └── migrations/       # Database migration files
+│   │
+│   └── frontend/             # Angular 18 SPA
+│       └── src/app/
+│           ├── core/         # Guards, interceptors, services (auth, cart, UI), models
+│           ├── features/
+│           │   ├── auth/     # Login & Register (lazy-loaded)
+│           │   ├── products/ # Product list & detail (lazy-loaded)
+│           │   └── cart/     # Cart page & order confirmation (lazy-loaded)
+│           └── shared/       # Navbar, loading spinner, confirm dialog, form controls, pipes
+├── docs/                     # Architecture, infrastructure, and pipeline documentation
+└── screenshots/              # AWS console and CircleCI build screenshots
 ```
 
 ## Detailed Documentation
 
-- [frontend/README.md](frontend/README.md) — Angular project structure, features, and key patterns
-- [backend/README.md](backend/README.md) — API routes, environment variables, and database scripts
+- [docs/infrastructure.md](docs/infrastructure.md) — AWS services, environment variables, and networking
+- [docs/app-dependencies.md](docs/app-dependencies.md) — Runtime and development dependency reference
+- [docs/pipeline.md](docs/pipeline.md) — CircleCI CI/CD pipeline stages and secrets configuration
+- [docs/architecture.md](docs/architecture.md) — Infrastructure and pipeline architecture diagrams
+- [app/frontend/README.md](app/frontend/README.md) — Angular project structure, features, and key patterns
+- [app/backend/README.md](app/backend/README.md) — API routes, environment variables, and database scripts

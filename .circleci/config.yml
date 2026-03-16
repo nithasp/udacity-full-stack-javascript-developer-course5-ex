@@ -1,0 +1,162 @@
+version: 2.1
+
+# ─── Orbs ───────────────────────────────────────────────────────────────────
+# Pre-packaged CircleCI commands for Node, AWS CLI, and Elastic Beanstalk
+orbs:
+  node: circleci/node@5.2.0
+  aws-cli: circleci/aws-cli@4.1.3
+  eb: circleci/aws-elastic-beanstalk@2.0.1
+
+# ─── Jobs ────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. Install & build + test backend ──────────────────────────────────────
+  build-and-test-backend:
+    docker:
+      # Primary container — Node 18
+      - image: cimg/node:18.20.4
+      # Sidecar container — PostgreSQL 14 (used only during tests)
+      - image: cimg/postgres:14.13
+        environment:
+          POSTGRES_USER: storefront_user
+          POSTGRES_PASSWORD: storefront_pass
+          POSTGRES_DB: storefront_test
+    environment:
+      # Environment variables picked up by the backend during tests;
+      # secrets (TOKEN_SECRET, BCRYPT_PASSWORD) are injected from CircleCI
+      # project-level environment variables configured in the UI.
+      ENV: test
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: storefront_dev
+      POSTGRES_TEST_DB: storefront_test
+      POSTGRES_USER: storefront_user
+      POSTGRES_PASSWORD: storefront_pass
+    steps:
+      - checkout
+      # Install backend Node dependencies
+      - node/install-packages:
+          pkg-manager: npm
+          app-dir: app/backend
+      # Compile TypeScript
+      - run:
+          name: Build backend
+          command: npm run build
+          working_directory: app/backend
+      # Run migrations + Jasmine tests + reset
+      - run:
+          name: Test backend
+          command: npm test
+          working_directory: app/backend
+
+  # ── 2. Install & build + test frontend ─────────────────────────────────────
+  build-and-test-frontend:
+    docker:
+      # Browsers image is required to run Karma/Chrome headless tests
+      - image: cimg/node:18.20.4-browsers
+    steps:
+      - checkout
+      # Install frontend Node dependencies
+      - node/install-packages:
+          pkg-manager: npm
+          app-dir: app/frontend
+      # Replace the EB URL placeholder before production build
+      - run:
+          name: Set production API URL
+          command: |
+            sed -i "s|http://YOUR_EB_ENV_URL|$EB_API_URL|g" \
+              src/environments/environment.production.ts
+          working_directory: app/frontend
+      # Compile Angular production bundle
+      - run:
+          name: Build frontend (production)
+          command: npm run build -- --configuration production
+          working_directory: app/frontend
+      # Run Karma tests in headless Chrome (no display server needed)
+      - run:
+          name: Test frontend
+          command: npm run test -- --watch=false --browsers=ChromeHeadless
+          working_directory: app/frontend
+      # Persist the compiled dist/ folder for the deploy job
+      - persist_to_workspace:
+          root: app/frontend
+          paths:
+            - dist
+
+  # ── 3. Deploy backend to AWS Elastic Beanstalk ─────────────────────────────
+  deploy-backend:
+    docker:
+      - image: cimg/python:3.11-node
+    steps:
+      - checkout
+      # Set up AWS credentials from CircleCI environment variables
+      # Required: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION
+      - aws-cli/setup
+      # Install the EB CLI
+      - run:
+          name: Install EB CLI
+          command: pip install awsebcli --upgrade
+      # Build TypeScript before packaging
+      - node/install-packages:
+          pkg-manager: npm
+          app-dir: app/backend
+      - run:
+          name: Build backend
+          command: npm run build
+          working_directory: app/backend
+      # Deploy the built app to Elastic Beanstalk
+      # EB_APP_NAME and EB_ENV_NAME must be set in CircleCI project env vars
+      - run:
+          name: Deploy to Elastic Beanstalk
+          command: |
+            eb init $EB_APP_NAME --region $AWS_DEFAULT_REGION --platform "Node.js 18"
+            eb use $EB_ENV_NAME
+            eb deploy --staged
+          working_directory: app/backend
+
+  # ── 4. Deploy frontend static files to AWS S3 ──────────────────────────────
+  deploy-frontend:
+    docker:
+      - image: cimg/node:18.20.4
+    steps:
+      - checkout
+      # Attach the compiled dist/ folder from the build job
+      - attach_workspace:
+          at: app/frontend
+      # Set up AWS credentials
+      - aws-cli/setup
+      # Upload the Angular browser bundle to the S3 bucket
+      # S3_BUCKET_NAME must be set in CircleCI project env vars
+      - run:
+          name: Deploy frontend to S3
+          command: |
+            aws s3 sync \
+              app/frontend/dist/full-stack-javascript-developer-course4-ex-nitha/browser \
+              s3://$S3_BUCKET_NAME \
+              --delete \
+              --acl public-read
+
+# ─── Workflows ────────────────────────────────────────────────────────────────
+workflows:
+  # Main workflow: runs on every push; deploys only from the main branch
+  build-test-deploy:
+    jobs:
+      # Always run: build & test both sides of the stack
+      - build-and-test-backend
+      - build-and-test-frontend
+
+      # Deploy backend only after its tests pass AND only on the main branch
+      - deploy-backend:
+          requires:
+            - build-and-test-backend
+          filters:
+            branches:
+              only: main
+
+      # Deploy frontend only after its tests pass AND only on the main branch
+      - deploy-frontend:
+          requires:
+            - build-and-test-frontend
+          filters:
+            branches:
+              only: main
