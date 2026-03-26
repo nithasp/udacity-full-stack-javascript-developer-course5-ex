@@ -6,6 +6,7 @@ orbs:
   node: circleci/node@5.2.0
   aws-cli: circleci/aws-cli@4.1.3
   eb: circleci/aws-elastic-beanstalk@2.0.1
+  browser-tools: circleci/browser-tools@1.4.8
 
 # ─── Jobs ────────────────────────────────────────────────────────────────────
 jobs:
@@ -57,15 +58,7 @@ jobs:
     steps:
       - checkout
       # Install Google Chrome for headless testing
-      - run:
-          name: Install Chrome
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y google-chrome-stable || true
-            CHROME_PATH=$(which google-chrome-stable 2>/dev/null || which google-chrome 2>/dev/null || which chromium-browser 2>/dev/null || which chromium 2>/dev/null)
-            echo "export CHROME_BIN=$CHROME_PATH" >> $BASH_ENV
-            source $BASH_ENV
-            echo "Chrome binary: $CHROME_BIN"
+      - browser-tools/install-chrome
       # Install frontend Node dependencies
       - node/install-packages:
           pkg-manager: npm
