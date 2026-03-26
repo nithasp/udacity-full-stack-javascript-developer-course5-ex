@@ -60,6 +60,7 @@ jobs:
       - node/install-packages:
           pkg-manager: npm
           app-dir: app/frontend
+          override-ci-command: npm install
       # Replace the EB URL placeholder before production build
       - run:
           name: Set production API URL
