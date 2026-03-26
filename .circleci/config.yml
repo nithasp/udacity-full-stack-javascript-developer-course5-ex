@@ -54,6 +54,8 @@ jobs:
     docker:
       # Browsers image is required to run Karma/Chrome headless tests
       - image: cimg/node:20.18.0-browsers
+    environment:
+      CHROME_BIN: /usr/bin/google-chrome
     steps:
       - checkout
       # Install frontend Node dependencies
