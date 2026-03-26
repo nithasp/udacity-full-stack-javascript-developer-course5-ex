@@ -137,8 +137,7 @@ jobs:
             aws s3 sync \
               app/frontend/dist/full-stack-javascript-developer-course4-ex-nitha/browser \
               s3://$S3_BUCKET_NAME \
-              --delete \
-              --acl public-read
+              --delete
 
 # ─── Workflows ────────────────────────────────────────────────────────────────
 workflows:
