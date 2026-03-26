@@ -35,11 +35,11 @@
                 </label>
                 <input type="password" id="password" name="password" class="form-input"
                     [class.form-input--error]="passwordField.invalid && (passwordField.touched || submitted)"
-                    [(ngModel)]="password" #passwordField="ngModel" required minlength="6"
+                    [(ngModel)]="password" #passwordField="ngModel" required minlength="8"
                     placeholder="Create a password" [disabled]="isLoading" />
                 <div class="form-error" *ngIf="passwordField.invalid && (passwordField.touched || submitted)">
                     <span *ngIf="passwordField.errors?.['required']">Password is required</span>
-                    <span *ngIf="passwordField.errors?.['minlength']">Password must be at least 6 characters</span>
+                    <span *ngIf="passwordField.errors?.['minlength']">Password must be at least 8 characters</span>
                 </div>
             </div>
 
