@@ -25,7 +25,7 @@ describe('NotificationService', () => {
 
   it('should call toastr.success with correct arguments', () => {
     service.success('Item added', 'Cart');
-    expect(toastrSpy.success).toHaveBeenCalledWith('Item added', 'Cart', jasmine.any(Object));
+    expect(toastrSpy.success).toHaveBeenCalledWith('Item added', 'Cart');
   });
 
   it('should call toastr.error with correct arguments', () => {
@@ -40,12 +40,12 @@ describe('NotificationService', () => {
 
   it('should call toastr.info with correct arguments', () => {
     service.info('Cart updated', 'Info');
-    expect(toastrSpy.info).toHaveBeenCalledWith('Cart updated', 'Info', jasmine.any(Object));
+    expect(toastrSpy.info).toHaveBeenCalledWith('Cart updated', 'Info');
   });
 
   it('should use default title for success', () => {
     service.success('Done');
-    expect(toastrSpy.success).toHaveBeenCalledWith('Done', 'Success', jasmine.any(Object));
+    expect(toastrSpy.success).toHaveBeenCalledWith('Done', 'Success');
   });
 
   it('should use default title for error', () => {
