@@ -5,6 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "node dist/server.js",
+    "postinstall": "npm run build",
     "watch": "tsc-watch --onSuccess \"node ./dist/server.js\"",
     "build": "npx tsc",
     "test": "cross-env ENV=test npm run build && db-migrate --env test up && cross-env ENV=test jasmine && db-migrate --env test reset",

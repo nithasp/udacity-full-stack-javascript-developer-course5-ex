@@ -1,10 +1,10 @@
 # MyStore — Full-Stack E-Commerce App
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/nithasp/udacity-full-stack-javascript-developer-course5-ex/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/nithasp/udacity-full-stack-javascript-developer-course5-ex/tree/main)
 
-> **Hosted Frontend:** [http://YOUR_S3_BUCKET_NAME.s3-website-us-east-1.amazonaws.com](http://YOUR_S3_BUCKET_NAME.s3-website-us-east-1.amazonaws.com)
+> **Hosted Frontend:** [http://storefront-frontend-prod-nt.s3-website-ap-southeast-2.amazonaws.com](http://storefront-frontend-prod-nt.s3-website-ap-southeast-2.amazonaws.com)
 >
-> **Hosted API:** [http://YOUR_EB_ENV_URL](http://YOUR_EB_ENV_URL)
+> **Hosted API:** [http://storefront-api-env.eba-xmibpinb.ap-southeast-2.elasticbeanstalk.com](http://storefront-api-env.eba-xmibpinb.ap-southeast-2.elasticbeanstalk.com)
 
 An e-commerce single-page application built with **Angular 18** and backed by a **Node/Express + PostgreSQL** REST API. Users can register and log in, browse a product catalog, view product details, add items to a shopping cart, manage quantities, and complete a checkout flow with an order confirmation page.
 
