@@ -108,14 +108,40 @@ jobs:
           name: Build backend
           command: npm run build
           working_directory: app/backend
-      # Deploy the built app to Elastic Beanstalk
+      # Initialize the EB CLI for this application and environment
       # EB_APP_NAME and EB_ENV_NAME must be set in CircleCI project env vars
       - run:
-          name: Deploy to Elastic Beanstalk
+          name: Initialize Elastic Beanstalk
           command: |
             eb init $EB_APP_NAME --region $AWS_DEFAULT_REGION --platform "Node.js 20"
             eb use $EB_ENV_NAME
-            eb deploy --staged
+          working_directory: app/backend
+      # Send all application secrets from CircleCI to the EB environment using eb setenv.
+      # These variables are configured in CircleCI Project Settings → Environment Variables
+      # and forwarded to EB so the running Node app can read them via process.env.
+      - run:
+          name: Set EB environment variables
+          command: |
+            eb setenv \
+              ENV=production \
+              NODE_ENV=production \
+              PORT=8080 \
+              POSTGRES_HOST=$POSTGRES_HOST \
+              POSTGRES_PORT=$POSTGRES_PORT \
+              POSTGRES_DB=$POSTGRES_DB \
+              POSTGRES_USER=$POSTGRES_USER \
+              POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+              TOKEN_SECRET=$TOKEN_SECRET \
+              BCRYPT_PASSWORD=$BCRYPT_PASSWORD \
+              SALT_ROUNDS=$SALT_ROUNDS \
+              ACCESS_TOKEN_EXPIRY=$ACCESS_TOKEN_EXPIRY \
+              REFRESH_TOKEN_EXPIRY_DAYS=$REFRESH_TOKEN_EXPIRY_DAYS \
+              ALLOWED_ORIGIN=$ALLOWED_ORIGIN
+          working_directory: app/backend
+      # Deploy the built app to Elastic Beanstalk
+      - run:
+          name: Deploy to Elastic Beanstalk
+          command: eb deploy --staged
           working_directory: app/backend
 
   # ── 4. Deploy frontend static files to AWS S3 ──────────────────────────────

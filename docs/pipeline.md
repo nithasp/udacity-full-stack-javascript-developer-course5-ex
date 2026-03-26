@@ -38,7 +38,8 @@ Push to GitHub
   1. Install EB CLI                   1. Attach dist/ workspace
   2. aws-cli/setup                    2. aws-cli/setup
   3. npm run build                    3. aws s3 sync dist/ → S3 bucket
-  4. eb deploy
+  4. Set EB env vars (secrets)
+  5. eb deploy
 ```
 
 ---
@@ -79,6 +80,7 @@ A browser-capable Docker image is used so that Karma can launch headless Chrome.
 | AWS setup | Configure credentials from CircleCI env vars |
 | Install EB CLI | `pip install awsebcli` |
 | Build | `npm run build` |
+| Set EB env vars | Send all application secrets from CircleCI to the EB environment using `eb setenv key=value` |
 | Deploy | `eb deploy` — package and deploy to Elastic Beanstalk |
 
 ### `deploy-frontend` _(main branch only)_
@@ -104,10 +106,17 @@ All secrets are stored in CircleCI as **Project Environment Variables** (Setting
 | `EB_ENV_NAME` | deploy-backend |
 | `EB_API_URL` | build-and-test-frontend (injected into Angular production build) |
 | `S3_BUCKET_NAME` | deploy-frontend |
-| `TOKEN_SECRET` | build-and-test-backend (backend tests) |
-| `BCRYPT_PASSWORD` | build-and-test-backend (backend tests) |
-| `SALT_ROUNDS` | build-and-test-backend (backend tests) |
-| `POSTGRES_PASSWORD` | Elastic Beanstalk environment (set via EB console) |
+| `POSTGRES_HOST` | deploy-backend (forwarded to EB) |
+| `POSTGRES_PORT` | deploy-backend (forwarded to EB) |
+| `POSTGRES_DB` | deploy-backend (forwarded to EB) |
+| `POSTGRES_USER` | deploy-backend (forwarded to EB) |
+| `POSTGRES_PASSWORD` | deploy-backend (forwarded to EB) |
+| `TOKEN_SECRET` | build-and-test-backend, deploy-backend (forwarded to EB) |
+| `BCRYPT_PASSWORD` | build-and-test-backend, deploy-backend (forwarded to EB) |
+| `SALT_ROUNDS` | build-and-test-backend, deploy-backend (forwarded to EB) |
+| `ACCESS_TOKEN_EXPIRY` | deploy-backend (forwarded to EB) |
+| `REFRESH_TOKEN_EXPIRY_DAYS` | deploy-backend (forwarded to EB) |
+| `ALLOWED_ORIGIN` | deploy-backend (forwarded to EB) |
 
 ---
 
