@@ -13,8 +13,8 @@ jobs:
   # ── 1. Install & build + test backend ──────────────────────────────────────
   build-and-test-backend:
     docker:
-      # Primary container — Node 18
-      - image: cimg/node:18.20.4
+      # Primary container — Node 20
+      - image: cimg/node:20.18.0
       # Sidecar container — PostgreSQL 14 (used only during tests)
       - image: cimg/postgres:14.13
         environment:
@@ -53,7 +53,7 @@ jobs:
   build-and-test-frontend:
     docker:
       # Browsers image is required to run Karma/Chrome headless tests
-      - image: cimg/node:18.20.4-browsers
+      - image: cimg/node:20.18.0-browsers
     steps:
       - checkout
       # Install frontend Node dependencies
@@ -109,7 +109,7 @@ jobs:
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
-            eb init $EB_APP_NAME --region $AWS_DEFAULT_REGION --platform "Node.js 18"
+            eb init $EB_APP_NAME --region $AWS_DEFAULT_REGION --platform "Node.js 20"
             eb use $EB_ENV_NAME
             eb deploy --staged
           working_directory: app/backend
@@ -117,7 +117,7 @@ jobs:
   # ── 4. Deploy frontend static files to AWS S3 ──────────────────────────────
   deploy-frontend:
     docker:
-      - image: cimg/node:18.20.4
+      - image: cimg/node:20.18.0
     steps:
       - checkout
       # Attach the compiled dist/ folder from the build job
