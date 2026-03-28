@@ -8,6 +8,7 @@ import { CartService } from './core/services/cart/cart.service';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
+  title = 'MyStore';
   authReady = false;
 
   constructor(
