@@ -14,7 +14,7 @@ services:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U storefront_user -d storefront_dev"]
-      interval: 15m
+      interval: 15s
       timeout: 5s
       retries: 5
 

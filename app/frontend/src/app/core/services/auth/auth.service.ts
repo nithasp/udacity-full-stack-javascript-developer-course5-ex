@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AuthApiService } from './auth-api.service';
 import { AuthUser, AuthResponse, RefreshResponse } from '../../models/auth.model';
 
@@ -10,13 +10,47 @@ const USER_KEY = 'currentUser';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private loggedInSubject = new BehaviorSubject<boolean>(this.hasValidToken());
+  private loggedInSubject = new BehaviorSubject<boolean>(false);
   isLoggedIn$ = this.loggedInSubject.asObservable();
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getCachedUser());
   currentUser$ = this.currentUserSubject.asObservable();
 
+  /** Emits once when the initial auth check is complete. Guards wait on this. */
+  private initializedSubject = new BehaviorSubject<boolean>(false);
+  authInitialized$ = this.initializedSubject.asObservable();
+
   constructor(private authApi: AuthApiService) {}
+
+  /**
+   * Validates the current session (refreshing if needed) and settles
+   * `isLoggedIn$` and `authInitialized$` before the app renders content.
+   * Called from AppComponent.ngOnInit.
+   */
+  initializeAuth(): Observable<void> {
+    if (this.hasValidToken()) {
+      this.loggedInSubject.next(true);
+      this.initializedSubject.next(true);
+      return of(undefined);
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken) {
+      return this.authApi.refresh(refreshToken).pipe(
+        tap((res) => this.storeRefreshedTokens(res)),
+        map(() => undefined),
+        catchError(() => {
+          this.clearSession();
+          return of(undefined);
+        }),
+        tap(() => this.initializedSubject.next(true))
+      );
+    }
+
+    this.loggedInSubject.next(false);
+    this.initializedSubject.next(true);
+    return of(undefined);
+  }
 
   hasValidToken(): boolean {
     const token = this.getAccessToken();
@@ -52,6 +86,10 @@ export class AuthService {
 
   getCurrentUser(): AuthUser | null {
     return this.currentUserSubject.getValue();
+  }
+
+  get isLoggedIn(): boolean {
+    return this.loggedInSubject.getValue();
   }
 
   fetchCurrentUser(): Observable<AuthUser> {

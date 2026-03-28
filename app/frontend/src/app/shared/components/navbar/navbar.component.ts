@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { distinctUntilChanged, skip } from 'rxjs/operators';
 import { CartService } from '../../../core/services/cart/cart.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { AuthUser } from '../../../core/models/auth.model';
@@ -32,17 +33,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Seed state synchronously from the service so the template renders
+    // correctly on the very first paint — no waiting for an observable tick.
+    this.isLoggedIn = this.authService.isLoggedIn;
+    this.currentUser = this.authService.getCurrentUser();
+
     this.cartSub = this.cartService.cart$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
     });
 
-    this.authSub = this.authService.isLoggedIn$.subscribe(loggedIn => {
+    // skip(1) ignores the BehaviorSubject's replay of the current value (which
+    // we already seeded above). After that, only genuine state changes fire:
+    // false → true means the user just logged in; true → false means logout.
+    this.authSub = this.authService.isLoggedIn$.pipe(
+      distinctUntilChanged(),
+      skip(1)
+    ).subscribe(loggedIn => {
       this.isLoggedIn = loggedIn;
       if (!loggedIn) {
         this.userMenuOpen = false;
       } else {
-        // Fetch fresh user data from the server so the displayed username
-        // always reflects the real database value, not just the cached copy.
+        // User just logged in — fetch fresh profile from the server.
         this.authService.fetchCurrentUser().subscribe({ error: () => {} });
       }
     });

@@ -8,7 +8,7 @@ import { CartService } from './core/services/cart/cart.service';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  title = 'MyStore';
+  authReady = false;
 
   constructor(
     private authService: AuthService,
@@ -16,6 +16,10 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.authService.initializeAuth().subscribe(() => {
+      this.authReady = true;
+    });
+
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
       if (isLoggedIn) {
         this.cartService.fetchCart();
